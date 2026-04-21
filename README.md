@@ -60,23 +60,33 @@ npm install
 cp .env.example .env.local
 ```
 
-Edit `.env.local` with your Supabase credentials:
+Edit `.env.local` with your Supabase credentials (Project Settings > API):
 ```
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-5. Run database migrations:
-   - Go to Supabase Dashboard > SQL Editor
-   - Copy and run `supabase/migrations/001_initial_schema.sql`
-   - Then run `supabase/seed.sql` for test data
+5. Run database migrations (Supabase Dashboard > SQL Editor, in order):
+   - `supabase/migrations/001_initial_schema.sql` - tables, indexes, RLS enabled
+   - `supabase/migrations/002_rls_policies.sql` - org-scoped row-level security policies
+   - `supabase/seed.sql` - sample org, roles, locations, staff
 
-6. Start the development server:
+6. Create an auth user and link them to a staff row:
+   - Supabase Dashboard > Authentication > Users > Add user (email + password).
+   - SQL Editor:
+     ```sql
+     UPDATE staff
+     SET auth_user_id = '<uuid-of-auth-user>'
+     WHERE email = '<email-of-staff-row>';
+     ```
+   - Staff rows with `is_manager = true` land on `/manager/dashboard` after login; others on `/staff/schedule`.
+
+7. Start the development server:
 ```bash
 npm run dev
 ```
 
-7. Open [http://localhost:3000](http://localhost:3000)
+8. Open [http://localhost:3000](http://localhost:3000) - you'll be redirected to `/login`.
 
 ## Project Structure
 

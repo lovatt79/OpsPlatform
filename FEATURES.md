@@ -62,11 +62,30 @@ Route groups `(auth)`, `(manager)`, `(staff)` are Next.js App Router groupings �
 ## Auth
 
 ### Login
-- **Status:** UI scaffold
+- **Status:** Shipped
 - **Route:** `/login`
-- **Key files:** `src/app/(auth)/login/page.tsx`
-- **How it works:** Email + password form. On submit, currently redirects to `/manager/dashboard` without calling Supabase. Supabase Auth is the intended backend (see `REQUIREMENTS.md` → Tech Stack).
-- **How to use / test:** Visit `/login`, fill in any values, click **Sign in** — you land on the manager dashboard.
+- **Key files:** `src/app/(auth)/login/page.tsx`, `src/lib/supabase/client.ts`
+- **How it works:** Email + password form calls `supabase.auth.signInWithPassword`. On success, looks up the signed-in user's `staff` row via `auth_user_id` and routes to `/manager/dashboard` if `is_manager`, otherwise `/staff/schedule`. Surface Supabase error messages inline on failure. Honors a `?redirect=` param from middleware so users land on the page they originally tried to visit.
+- **How to use / test:** Create an auth user in Supabase Dashboard > Authentication; link it to a `staff.auth_user_id` in SQL Editor; visit `/login` and sign in.
+
+### Logout
+- **Status:** Shipped
+- **Route:** `POST /auth/logout`
+- **Key files:** `src/app/auth/logout/route.ts`, `src/components/manager/sidebar.tsx`, `src/app/(staff)/layout.tsx`
+- **How it works:** Route handler calls `supabase.auth.signOut()` and redirects to `/login`. A "Sign out" button lives at the bottom of the manager sidebar and in the staff header.
+- **How to use / test:** Click Sign out from either shell; you'll be signed out and redirected to `/login`.
+
+### Session middleware & route protection
+- **Status:** Shipped
+- **Key files:** `src/middleware.ts`, `src/lib/supabase/middleware.ts`
+- **How it works:** On every request (excluding static assets), refreshes the Supabase session cookies. Redirects unauthenticated users to `/login?redirect=<path>`. Redirects authenticated users away from `/login` to their home page. Blocks non-managers from `/manager/*` routes by looking up `staff.is_manager`.
+- **How to use / test:** Try visiting `/manager/dashboard` while logged out → redirected to `/login`. Sign in as a non-manager → visiting `/manager/*` sends you to `/staff/schedule`.
+
+### Auth helpers (server)
+- **Status:** Shipped
+- **Key files:** `src/lib/auth.ts`
+- **How it works:** `getCurrentUser()`, `getCurrentStaff()`, `requireStaff()`, `requireManager()` — use these in server components and server actions to access the current user's `staff` row and enforce manager-only access at the data layer (middleware handles routing; these handle data).
+- **How to use / test:** Iteration 2 onward will consume them in server components.
 
 ---
 
@@ -227,13 +246,15 @@ The staff app is designed as a mobile-first PWA (see `REQUIREMENTS.md` → Staff
 
 ## Not yet built
 
-Features from `REQUIREMENTS.md` that have no scaffold yet. Add a section above when you implement one.
+Features from `REQUIREMENTS.md` that have no implementation yet. `BUILDPLAN.md` sequences these into iterations; add a section above when you implement one.
 
-- Supabase Auth wiring (login is a redirect stub today).
-- Supabase data layer: all pages use inline mock data.
-- Row-level security / multi-tenant `organization_id` scoping.
-- Compliance rules engine (real validation during schedule edits).
-- Timesheets + digital signature capture.
+- Supabase data layer: all pages under `/manager/*` and `/staff/*` still render inline mock data (iteration 2+ per BUILDPLAN).
+- Schedule builder CRUD + real compliance engine (iteration 3).
+- Open shifts post/claim/apply end-to-end (iteration 4).
+- Callouts + "emergency replan" screen (iteration 5).
+- Assets + issue reporting wired to DB (iteration 6).
+- HR expiry calculations, activity log reads, settings CRUD (iteration 7).
+- Timesheets + digital signature capture (iteration 8).
 - Department-manager scoped permissions.
 - Weather API for staff-schedule and dashboard.
 - Automated notifications (Twilio / Resend) — explicitly deferred per REQUIREMENTS.
@@ -246,3 +267,5 @@ Features from `REQUIREMENTS.md` that have no scaffold yet. Add a section above w
 - **2026-04-21** — Created placeholder pages for all nine manager routes and the three missing staff routes. Fixed 404s caused by sidebar links pointing to non-existent pages.
 - **2026-04-21** — Rebuilt all placeholder pages as UI scaffolds with mock data matching REQUIREMENTS.md (schedule grid, roster, open shifts, requests + callouts, assets + issues, HR, activity log, settings; staff open-shifts / requests / profile).
 - **2026-04-21** — Added this `FEATURES.md` tracking document.
+- **2026-04-21** — Added `BUILDPLAN.md` (iteration roadmap informed by competitor research of Deputy, 7shifts, Sling, Connecteam, Origin).
+- **2026-04-21** — Iteration 1 (Foundation): wired Supabase Auth (login + logout + session middleware + route protection), added `.env.example`, added `src/lib/auth.ts` helpers, added `supabase/migrations/002_rls_policies.sql` with org-scoped RLS for all tables, added Sign out controls to both shells.

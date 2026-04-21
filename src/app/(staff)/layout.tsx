@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Calendar, ClipboardList, Hand, User } from 'lucide-react'
+import { Calendar, ClipboardList, Hand, User, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navigation = [
@@ -22,8 +22,17 @@ export default function StaffLayout({
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b bg-white px-4 py-3">
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-4 py-3">
         <h1 className="text-lg font-semibold text-gray-900">Ops Platform</h1>
+        <form action="/auth/logout" method="post">
+          <button
+            type="submit"
+            aria-label="Sign out"
+            className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          >
+            <LogOut className="h-5 w-5" />
+          </button>
+        </form>
       </header>
 
       {/* Main content */}

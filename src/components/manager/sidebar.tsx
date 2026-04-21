@@ -14,6 +14,7 @@ import {
   UserCog,
   Menu,
   X,
+  LogOut,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
@@ -105,6 +106,17 @@ export function ManagerSidebar() {
                         ))}
                       </ul>
                     </li>
+                    <li className="mt-auto -mx-2">
+                      <form action="/auth/logout" method="post">
+                        <button
+                          type="submit"
+                          className="group flex w-full gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-primary-600"
+                        >
+                          <LogOut className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-primary-600" />
+                          Sign out
+                        </button>
+                      </form>
+                    </li>
                   </ul>
                 </nav>
               </div>
@@ -148,6 +160,17 @@ export function ManagerSidebar() {
                     </li>
                   ))}
                 </ul>
+              </li>
+              <li className="mt-auto -mx-2">
+                <form action="/auth/logout" method="post">
+                  <button
+                    type="submit"
+                    className="group flex w-full gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-primary-600"
+                  >
+                    <LogOut className="h-6 w-6 shrink-0 text-gray-400 group-hover:text-primary-600" />
+                    Sign out
+                  </button>
+                </form>
               </li>
             </ul>
           </nav>
